@@ -15,24 +15,112 @@ compras = [
         "nombre": "Juan Pérez",
         "fecha": "2024-10-01",
         "compras": [
-            {"codigo": "JO-001", "cantidad": 4},
-            {"codigo": "JO-002", "cantidad": 5}
-        ]
-    },
-    {
-        "nombre": "Juan Pérez",
-        "fecha": "2024-10-02",
-        "compras": [
-            {"codigo": "JO-006", "cantidad": 6},
-            {"codigo": "JO-002", "cantidad": 5}
+            { "codigo": "JO-001", "cantidad": 4 },
+            { "codigo": "JO-002", "cantidad": 5 }
         ]
     },
     {
         "nombre": "Ana López",
         "fecha": "2024-10-02",
         "compras": [
-            {"codigo": "JO-003", "cantidad": 2},
-            {"codigo": "JO-005", "cantidad": 3}
+            { "codigo": "JO-003", "cantidad": 2 },
+            { "codigo": "JO-005", "cantidad": 3 }
+        ]
+    },
+    {
+        "nombre": "Juan Pérez",
+        "fecha": "2024-10-01",
+        "compras": [
+            { "codigo": "JO-004", "cantidad": 1 },
+            { "codigo": "JO-006", "cantidad": 2 }
+        ]
+    },
+    {
+        "nombre": None,
+        "fecha": "2024-10-03",
+        "compras": [
+            { "codigo": "JO-007", "cantidad": 5 },
+            { "codigo": "JO-008", "cantidad": 2 }
+        ]
+    },
+    {
+        "nombre": "Carlos García",
+        "fecha": "2024-10-03",
+        "compras": [
+            { "codigo": "JO-001", "cantidad": 1 },
+            { "codigo": "JO-004", "cantidad": 2 }
+        ]
+    },
+    {
+        "nombre": "María Fernández",
+        "fecha": "2024-10-04",
+        "compras": [
+            { "codigo": "JO-002", "cantidad": 3 },
+            { "codigo": "JO-006", "cantidad": 1 }
+        ]
+    },
+    {
+        "nombre": None,
+        "fecha": "2024-10-05",
+        "compras": [
+            { "codigo": "JO-003", "cantidad": 4 },
+            { "codigo": "JO-005", "cantidad": 1 }
+        ]
+    },
+    {
+        "nombre": "Luis Martínez",
+        "fecha": "2024-10-05",
+        "compras": [
+            { "codigo": "JO-007", "cantidad": 5 },
+            { "codigo": "JO-008", "cantidad": 2 }
+        ]
+    },
+    {
+        "nombre": "Sofía Ramírez",
+        "fecha": "2024-10-06",
+        "compras": [
+            { "codigo": "JO-003", "cantidad": 4 },
+            { "codigo": "JO-005", "cantidad": 1 }
+        ]
+    },
+    {
+        "nombre": "David Torres",
+        "fecha": "2024-10-07",
+        "compras": [
+            { "codigo": "JO-001", "cantidad": 2 },
+            { "codigo": "JO-007", "cantidad": 3 }
+        ]
+    },
+    {
+        "nombre": "Lucía González",
+        "fecha": "2024-10-08",
+        "compras": [
+            { "codigo": "JO-002", "cantidad": 1 },
+            { "codigo": "JO-006", "cantidad": 4 }
+        ]
+    },
+    {
+        "nombre": "Fernando Díaz",
+        "fecha": "2024-10-09",
+        "compras": [
+            { "codigo": "JO-004", "cantidad": 2 },
+            { "codigo": "JO-008", "cantidad": 3 }
+        ]
+    },
+    {
+        "nombre": None,
+        "fecha": "2024-10-10",
+        "compras": [
+            { "codigo": "JO-005", "cantidad": 1 },
+            { "codigo": "JO-003", "cantidad": 2 }
+        ]
+    },
+    {
+        "nombre": "Claudia Herrera",
+        "fecha": "2024-10-10",
+        "compras": [
+            { "codigo": "JO-002", "cantidad": 3 },
+            { "codigo": "JO-006", "cantidad": 1 }
         ]
     }
 ]
@@ -126,9 +214,62 @@ for dia in comprasPorDia:
     })
 
 #Por semana
-semana = 1
-for i in range(6, 31,  7):
-    semana += 1 #Pasar a la siguiente semana
+semanas = []
+for i in range(0, 4):
+    dic = {"semana": i+1,  "compra": []}
+    for j in range(i*7 - 1, (i+1)*7): #iterar por toda la semana
+        for compra in compras:
+            if compra["fecha"] == f"2024-10-{f"0{j}" if j< 10 else j}": #Revisar que este en esa semana
+                dic["compra"].append({"nombre": compra["nombre"], "compras": compra["compras"]})
 
+    semanas.append(dic)
+#Combinar las compras de una misma semana con mismo nombre:
+for  semana in semanas:
+    for i in range(len(semana["compra"])-1):
+        for j in range(i +1, len(semana["compra"])-1):
+            if semana["compra"][i]["nombre"] == semana["compra"][j]["nombre"]:
+                semana["compra"][i] = combineCompras(semana["compra"][i], semana["compra"][j])
+                semana["compra"].pop(j)
+
+#
+for semana in semanas:
+    dic = {"Semana": semana["semana"]}
+    mejoresCompradores= []
+    mejoresArtitculos= []
+
+    #Obtener los tres mejores compradores
+    for register in semana["compra"]:
+        if register["nombre"] == None:#Se debe tener registro del nombre
+            continue
+        price = getPrice(register)
+        if len(mejoresCompradores) == 3 and  price > mejoresCompradores[2]["total"]:
+            mejoresCompradores[2] = {"nombre": register["nombre"], "total": price}
+        elif len(mejoresCompradores) < 3:
+            mejoresCompradores.append({"nombre": register["nombre"], "total": price})
+    
+    dic["compradores"] = mejoresCompradores
+
+
+    for art in articulos:
+        count = 0
+        for register in semana["compra"]:
+            for compra in register["compras"]:
+                if compra["codigo"] == art ["codigo"]:
+                    count += compra["cantidad"]
+        if len(mejoresArtitculos) == 3 and count > mejoresArtitculos[2]["total"]:
+            mejoresArtitculos[2] = {"codigo": art["codigo"], "total": count}
+        elif len(mejoresCompradores) < 3:
+            mejoresArtitculos.append({"codigo": art["codigo"], "total": count})
+    #Convertir el total de cantidad a precio
+    for art in mejoresArtitculos:
+        for arti in articulos:
+            if arti["codigo"] == art["codigo"]:
+                art["total"] = arti["valor"] * art["total"]
+    
+    dic["articulos"] = mejoresArtitculos
+    if  len(mejoresCompradores) > 0: #No dar info vacia
+         continue
+
+    output[1]["porSemana"].append(dic)
 
 print(output)
